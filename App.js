@@ -35,11 +35,11 @@ export default function App() {
     }, []);
 
     return (
-      <NavigationContainer>
-      <Stack.Navigator>
-          <Stack.Screen name="Dashboard" component={SubscriptionDashboard} />
-      </Stack.Navigator>
-  </NavigationContainer>
+    <NavigationContainer>
+        <Stack.Navigator>
+        <Stack.Screen name="Dashboard" component={SubscriptionDashboard} />
+        </Stack.Navigator>
+    </NavigationContainer>
 
 
 
