@@ -1,26 +1,41 @@
-// SubscriptionForm.js
-import React from 'react';
-import { TextInput, Button, StyleSheet, Alert } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
-const SubscriptionForm = ({ email, setEmail, alias, setAlias, balance, setBalance, rate, setRate, rechargeDate, setRechargeDate, addSubscription }) => {
-    
-    
+import React, { useState } from 'react';
+import { View, TextInput, Button, StyleSheet, Alert } from 'react-native';
+
+
+const SubscriptionForm = ({
+    email, setEmail,
+    alias, setAlias,
+    balance, setBalance,
+    rechargeDate, setRechargeDate,
+    addSubscription,
+}) => {const [showDatePicker, setShowDatePicker] = useState(false);
+
     const handleAddSubscription = () => {
-        if (!email || !alias || !balance || !rechargeDate) {
-            // Si algún campo está vacío, mostrar una alerta
-            console.log("Campos vacíos, mostrando alerta");
-            Alert.alert('Error', 'Todos los campos deben ser completados.');
-            
+        if (!email) {
+            console.log('Error', 'El campo de correo electrónico está vacío.');
+            return;
         }
-        else {
-        // Si todo está completo, proceder con la función de agregar suscripción
-        addSubscription();
+        if (!alias) {
+            console.log('Error', 'El campo de alias está vacío.');
+            return;
         }
+        if (!balance) {
+            console.log('Error', 'El campo de saldo está vacío.');
+            return;
+        }
+        if (!rechargeDate) {
+        console.log('Error', 'El campo de fecha de recarga está vacío.');
+            return;
+        }
+
+        // Call addSubscription with form data
+        addSubscription(email, alias, balance, rechargeDate);
     };
-    
-    
+
+
+
     return (
-        <React.Fragment>
+        <View>
             <TextInput
                 style={styles.input}
                 placeholder="Correo"
@@ -40,28 +55,28 @@ const SubscriptionForm = ({ email, setEmail, alias, setAlias, balance, setBalanc
                 value={balance}
                 onChangeText={setBalance}
             />
-            
+        
             <TextInput
                 style={styles.input}
                 placeholder="Fecha de Recarga (YYYY-MM-DD)"
                 value={rechargeDate}
                 onChangeText={setRechargeDate}
-            />
-            <Button title="Agregar Suscripción" onPress={handleAddSubscription} />
-        </React.Fragment>
-    );
-};
+                            />
+
+                <Button title="Agregar Suscripción" onPress={handleAddSubscription} />
+            </View>
+                    );
+                };
 
 const styles = StyleSheet.create({
-    input: { height: 40,
+    input: {
+        height: 40,
         borderColor: '#ccc',
-        borderWidth: 1, 
-        marginBottom: 10, 
+        borderWidth: 1,
+        marginBottom: 10,
         paddingLeft: 8,
-        borderRadius: 8, 
-    
+        borderRadius: 8,
     },
-        
 });
 
 export default SubscriptionForm;

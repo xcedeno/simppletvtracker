@@ -6,17 +6,26 @@ import * as Notifications from 'expo-notifications';
 import SubscriptionForm from './forms/SubscriptionForm';
 import SubscriptionList from './lists/SubscriptionList';
 import TimeRemainingChart from './components/TimeRemainingCharts';
+import useSubscription from './hooks/useSubscription';
+
 
 const SubscriptionDashboard = () => {
     const [subscriptions, setSubscriptions] = useState([]);
     const [email, setEmail] = useState('');
     const [alias, setAlias] = useState('');
     const [balance, setBalance] = useState('');
-    const [rate, setRate] = useState('');
     const [rechargeDate, setRechargeDate] = useState('');
+    const [showDatePicker, setShowDatePicker] = useState(false);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [rechargeAmount, setRechargeAmount] = useState('');
     const [selectedSubscriptionId, setSelectedSubscriptionId] = useState(null);
+    const { 
+        addSubscription,
+        fetchSubscriptions,
+        deleteSubscription,
+        editSubscription,
+        rechargeSubscription,
+        } = useSubscription();
 
     useEffect(() => {
         fetchSubscriptions();
@@ -38,161 +47,59 @@ const SubscriptionDashboard = () => {
         setIsModalVisible(true);
     };
 
-    const rechargeSubscription = async () => {
-        const { data, error } = await supabase
-            .from('suscriptions')
-            .select('balance')
-            .eq('id', selectedSubscriptionId)
-            .single();
-    
-        if (error) {
-            console.log('Error fetching balance:', error);
-            return;
-        }
-    
-        const updatedBalance = parseFloat(data.balance) + parseFloat(rechargeAmount);
-        
-        const { updateError } = await supabase
-            .from('suscriptions')
-            .update({
-                balance: updatedBalance,
-                recharge_date: new Date().toISOString(),
-            })
-            .eq('id', selectedSubscriptionId);
-    
-        if (updateError) {
-            console.log('Error updating subscription:', updateError);
-        } else {
-            fetchSubscriptions();
-            setIsModalVisible(false);
-            setRechargeAmount('');
-        }
+    const handleAddSubscription = async () => {
+        await addSubscription(email, alias, balance, rechargeDate);
+        fetchSubscriptions(); // Vuelve a cargar las suscripciones después de agregar una nueva
+        clearForm(); // Limpia los campos del formulario después de agregar
     };
 
-    const fetchSubscriptions = async () => {
-        const { data, error } = await supabase.from('suscriptions').select('*');
-        if (error) {
-            console.log('Error fetching data:', error);
-        } else {
-            const updatedData = data.map(sub => {
-                const dailyCost = 0.98;
-                const rechargeAmount = parseFloat(sub.balance);
-                
-                const lastRechargeDate = moment(sub.recharge_date);
-                const today = moment();
-                const daysSinceRecharge = today.diff(lastRechargeDate, 'days');
-                
-                const effectiveDays = Math.floor(rechargeAmount / dailyCost) - daysSinceRecharge;
-                const daysLeft = Math.max(effectiveDays, 0);
-
-                if (daysLeft <= 3) {
-                    sendNotification(sub.alias, daysLeft);
-                }
-                
-                return { ...sub, remaining_days: daysLeft };
-            });
-            setSubscriptions(updatedData);
-        }
-    };
     
-    const sendNotification = async (alias, daysLeft) => {
-        await Notifications.scheduleNotificationAsync({
-            content: {
-                title: '¡Suscripción Próxima a Vencer!',
-                body: `La suscripción de ${alias} vence en ${daysLeft} días.`,
-            },
-            trigger: { seconds: 1 },
-        });
-    };
 
-    const addSubscription = async () => {
-        const { data, error } = await supabase
-            .from('suscriptions')
-            .insert([
-                {
-                    email,
-                    alias,
-                    balance: parseFloat(balance),
-                    rate: parseFloat(rate),
-                    recharge_date: new Date().toISOString(),
-                },
-            ]);
-        if (error) {
-            console.log('Error inserting subscription:', error);
-            Alert.alert('Error', 'Hubo un problema al agregar la suscripción.');
-        } else {
-            fetchSubscriptions();
-            clearForm();
-            Alert.alert('Éxito', 'Los datos se agregaron a la base de datos exitosamente.');
-        }
-    };
+
+    
+    
+    
 
     const clearForm = () => {
         setEmail('');
         setAlias('');
         setBalance('');
-        setRate('');
         setRechargeDate('');
     };
 
-    const deleteSubscription = async (id) => {
-        const { error } = await supabase
-            .from('suscriptions')
-            .delete()
-            .eq('id', id);
-
-        if (error) {
-            console.log('Error deleting subscription:', error);
-        } else {
-            fetchSubscriptions();
-        }
-    };
-
-    const editSubscription = async (id) => {
-        const { error } = await supabase
-            .from('suscriptions')
-            .update({ balance: 100 })
-            .eq('id', id);
-
-        if (error) {
-            console.log('Error editing subscription:', error);
-        } else {
-            fetchSubscriptions();
-        }
-    };
 
     return (
         <div style={styles.container}>
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
             <Text style={styles.title}>Cuentas de Suscripción</Text>
             
-            <SubscriptionForm 
-                email={email} 
-                setEmail={setEmail} 
-                alias={alias} 
-                setAlias={setAlias} 
-                balance={balance} 
-                setBalance={setBalance} 
-                rate={rate} 
-                setRate={setRate} 
-                rechargeDate={rechargeDate} 
-                setRechargeDate={setRechargeDate} 
-                addSubscription={addSubscription} 
-            />
+            <SubscriptionForm
+                email={email}
+                setEmail={setEmail}
+                alias={alias}
+                setAlias={setAlias}
+                balance={balance}
+                setBalance={setBalance}
+                rechargeDate={rechargeDate}
+                setRechargeDate={setRechargeDate}
+                addSubscription={handleAddSubscription}
 
-            {subscriptions.map((sub) => (
-                <View key={sub.id} style={styles.item}>
-                    <Text style={styles.alias}>{sub.alias}</Text>
-                    <Text>Días Restantes: {sub.remaining_days}</Text>
-                    <TimeRemainingChart remainingDays={sub.remaining_days} />
-                </View>
-            ))}
+/>
+            <ScrollView style={styles.subscriptionsContainer}>
+                <SubscriptionList
+                    subscriptions={subscriptions}
+                    editSubscription={openRechargeModal}
+                    deleteSubscription={deleteSubscription}
+                />
 
-            <SubscriptionList 
-                subscriptions={subscriptions} 
-                editSubscription={openRechargeModal} 
-                deleteSubscription={deleteSubscription}
-            />
+                {subscriptions.map((sub) => (
+                    <View key={sub.id} style={styles.item}>
+                        <Text style={styles.alias}>{sub.alias}</Text>
+                        <Text>Días Restantes: {sub.remaining_days} días {sub.remaining_days > 3 ? '✅' : '❌'}</Text>
+                        <TimeRemainingChart remainingDays={sub.remaining_days} />
+                    </View>
+                ))}
+            </ScrollView>
 
             <Modal
                 visible={isModalVisible}

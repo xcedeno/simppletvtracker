@@ -46,9 +46,9 @@ const SubscriptionList = ({ subscriptions, editSubscription, deleteSubscription 
                     {expandedItems[item.id] && (
                         <View style={styles.expandedContent}>
                             <Text>Correo: {item.email}</Text>
-                            <Text>Saldo: {item.balance}</Text>
+                            <Text>Saldo: {item.balance} $</Text>
                             <Text>Tasa BCV: {rate ? `${rate} USD` : 'Cargando...'}</Text>
-                            <Text>Días Restantes: {item.remaining_days}</Text>
+                            <Text>Días Restantes: {item.remaining_days} Dias</Text>
 
                             <View style={styles.buttonsContainer}>
                                 <TouchableOpacity
