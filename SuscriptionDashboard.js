@@ -78,16 +78,15 @@ const SubscriptionDashboard = () => {
     const closeSuccessModal = () => {
         setShowSuccessModal(false);
     };
-    const handleRecharge = () => {
-        // Suponiendo que 'subscription' es un objeto con una propiedad 'uuid' que contiene el UUID
-        const uuid = subscriptions.uuid;
-    
-        if (typeof uuid !== 'string' || !uuid.match(/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/)) {
-            console.log('Invalid UUID:', uuid);
+    const handleRecharge = async () => {
+        // Asegúrate de que el monto de recarga es válido
+        if (!rechargeAmount || isNaN(rechargeAmount) || parseFloat(rechargeAmount) <= 0) {
+            Alert.alert('Error', 'Por favor ingresa un monto válido.');
             return;
         }
-    
-        rechargeSubscription(uuid, rechargeAmount);
+        
+        // Llamamos a la función de recarga pasando el monto
+        await rechargeSubscription(rechargeAmount);
     };
     
 
