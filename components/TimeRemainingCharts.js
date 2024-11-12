@@ -29,7 +29,7 @@ const TimeRemainingChart = ({ remainingDays }) => {
             </Text>
             <BarChart
                 data={data}
-                width={screenWidth - 150} // Adjusts to the screen width
+                width={screenWidth -150} // Adjusts to the screen width
                 height={220}
                 fromZero
                 yAxisSuffix=" días"

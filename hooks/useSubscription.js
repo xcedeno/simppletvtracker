@@ -28,16 +28,25 @@ const useSubscription = () => {
                 const daysSinceRecharge = today.diff(lastRechargeDate, 'days');
                 const effectiveDays = Math.floor(rechargeAmount / dailyCost) - daysSinceRecharge;
                 const daysLeft = Math.max(effectiveDays, 0);
-
+    
+                console.log(`Subscription: ${sub.alias}`);
+                console.log(`Last Recharge: ${lastRechargeDate.format()}`);
+                console.log(`Days Since Recharge: ${daysSinceRecharge}`);
+                console.log(`Effective Days: ${effectiveDays}`);
+                console.log(`Remaining Days: ${daysLeft}`);
+    
                 if (daysLeft <= 3) {
                     sendNotification(sub.alias, daysLeft);
                 }
                 
                 return { ...sub, remaining_days: daysLeft };
             });
+    
+            console.log('Updated Data:', updatedData);
             setSubscriptions(updatedData);
         }
     };
+    
 
     const sendNotification = async (alias, daysLeft) => {
         if (Platform.OS === 'ios' || Platform.OS === 'android') {
@@ -80,26 +89,51 @@ const useSubscription = () => {
     };
 
     const rechargeSubscription = async (id, amount) => {
-        const { data, error } = await supabase.from('suscriptions').select('balance').eq('id', id).single();
+    
+    
+        // Obtiene el balance actual de la suscripción
+        const { data, error } = await supabase
+            .from('suscriptions')
+            .select('balance')
+            .eq('id', id)
+            .single(); // 'single' asegura que solo obtienes un registro
+    
         if (error) {
             console.log('Error fetching balance:', error);
-            return;
+            return; // Si ocurre un error, se termina la función
         }
-
-        const updatedBalance = parseFloat(data.balance) + parseFloat(amount);
-        const { updateError } = await supabase.from('suscriptions').update({
-            balance: updatedBalance,
-            recharge_date: new Date().toISOString(),
-        }).eq('id', id);
-
+    
+        if (!data) {
+            console.log('Subscription not found with ID:', id);
+            return; // Si no se encuentra la suscripción, se termina la función
+        }
+    
+        console.log('Current balance:', data.balance);
+    
+        // Calcula el nuevo balance
+        const updatedBalance = parseFloat(data.balance) + parsedAmount;
+        console.log('Updated balance:', updatedBalance);
+    
+        // Actualiza la suscripción con el nuevo balance y la fecha de recarga
+        const { error: updateError } = await supabase
+            .from('suscriptions')
+            .update({
+                balance: updatedBalance,
+                recharge_date: new Date().toISOString(), // Fecha actual en formato ISO
+            })
+            .eq('id', id);
+    
         if (updateError) {
             console.log('Error updating subscription:', updateError);
         } else {
+            // Refresca la lista de suscripciones y restablece los valores del modal
             fetchSubscriptions();
-            setIsModalVisible(false);
-            setRechargeAmount('');
+            setIsModalVisible(false); // Oculta el modal de recarga
+            setRechargeAmount(''); // Restablece el monto de recarga
         }
     };
+    
+    
 
     return {
         subscriptions,

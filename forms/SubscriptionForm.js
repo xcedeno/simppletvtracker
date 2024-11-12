@@ -8,7 +8,9 @@ const SubscriptionForm = ({
     balance, setBalance,
     rechargeDate, setRechargeDate,
     addSubscription,
-}) => {const [showDatePicker, setShowDatePicker] = useState(false);
+}) => {
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [isModalVisible, setIsModalVisible] = useState(false);
 
     const handleAddSubscription = () => {
         if (!email) {
@@ -32,6 +34,7 @@ const SubscriptionForm = ({
         addSubscription(email, alias, balance, rechargeDate);
     };
 
+    
 
 
     return (
@@ -64,6 +67,7 @@ const SubscriptionForm = ({
                             />
 
                 <Button title="Agregar Suscripción" onPress={handleAddSubscription} />
+            
             </View>
                     );
                 };
@@ -76,6 +80,34 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         paddingLeft: 8,
         borderRadius: 8,
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+        width: 300,
+        padding: 20,
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    modalText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 20,
+    },
+    modalButton: {
+        backgroundColor: '#007bff',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 8,
+    },
+    modalButtonText: {
+        color: '#fff',
+        fontSize: 16,
     },
 });
 
