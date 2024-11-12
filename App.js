@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import SubscriptionDashboard from './SuscriptionDashboard';
+import * as Device from 'expo-device';
 
 
 async function registerForPushNotificationsAsync() {

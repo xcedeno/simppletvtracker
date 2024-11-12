@@ -8,6 +8,7 @@ import SubscriptionList from './lists/SubscriptionList';
 import TimeRemainingChart from './components/TimeRemainingCharts';
 import useSubscription from './hooks/useSubscription';
 import { v4 as uuidv4 } from 'uuid';
+import Clock from './components/Clock';
 
 
 const SubscriptionDashboard = () => {
@@ -36,6 +37,7 @@ const SubscriptionDashboard = () => {
         rechargeSubscription,
         fetchSubscriptions,
         } = useSubscription();
+        
 
     useEffect(() => {
         fetchSubscriptions();
@@ -92,6 +94,7 @@ const SubscriptionDashboard = () => {
 
     return (
         <View style={styles.container}>
+            <Clock />
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
             <Text style={styles.title}>Cuentas de Suscripción</Text>
             
@@ -155,6 +158,7 @@ const SubscriptionDashboard = () => {
             </Modal>
             <Text style={styles.title}>Dias Restantes</Text>
                 {subscriptions.map((sub) => (
+                
                     <View key={sub.id} style={styles.item}>
                     <Text style={styles.alias}>{sub.alias}</Text>
                     <Text>Días Restantes: {sub.remaining_days} días {sub.remaining_days > 3 ? '✅' : '❌'}</Text>

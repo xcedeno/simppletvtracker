@@ -13,6 +13,10 @@ const useSubscription = () => {
 
     useEffect(() => {
         fetchSubscriptions();
+    
+        const intervalId = setInterval(fetchSubscriptions, 24 * 60 * 60 * 1000); // cada 24 horas
+        
+        return () => clearInterval(intervalId);
     }, []);
 
     const fetchSubscriptions = async () => {
@@ -26,21 +30,26 @@ const useSubscription = () => {
                     const currentBalance = parseFloat(sub.balance);
                     const lastRechargeDate = moment(sub.recharge_date);
                     const lastDeductionDate = sub.last_deduction_date 
-                        ? moment(sub.last_deduction_date).startOf('day') 
+                        ? moment(sub.last_deduction_date) 
                         : null;
-                    const today = moment().startOf('day');
-    
+                    const today = moment();
+                    console.log(`Verificando deducción para ${sub.alias}`);
+                    console.log(`Last Deduction Date: ${lastDeductionDate}, Today: ${today}`);
                     // Verificar si es necesario realizar una deducción diaria
-                    if (!lastDeductionDate || today.isAfter(lastDeductionDate)) {
+                    if (!lastDeductionDate || today.diff(lastDeductionDate, 'hours') >= 24) {
                         // Calcular los días desde la última deducción (o recarga si no hay deducción)
-                        const daysSinceLastDeduction = lastDeductionDate 
-                            ? today.diff(lastDeductionDate, 'days') 
-                            : today.diff(lastRechargeDate, 'days');
+                        console.log('Es necesario realizar la deducción diaria');
+                        const hoursSinceLastDeduction = lastDeductionDate 
+                            ? today.diff(lastDeductionDate, 'hours') 
+                            : today.diff(lastRechargeDate, 'hours');
+                            const daysSinceLastDeduction = Math.floor(hoursSinceLastDeduction / 24);
     
                         // Calcular el nuevo balance después de la deducción
                         const balanceAfterDailyDeduction = currentBalance - (daysSinceLastDeduction * dailyCost);
                         const effectiveDays = Math.floor(balanceAfterDailyDeduction / dailyCost);
                         const daysLeft = Math.max(effectiveDays, 0);
+
+                        
     
                         console.log(`Subscription: ${sub.alias}`);
                         console.log(`Days Since Last Deduction: ${daysSinceLastDeduction}`);
@@ -65,8 +74,9 @@ const useSubscription = () => {
                             sendNotification(sub.alias, daysLeft);
                         }
     
-                        return { ...sub, balance: Math.max(balanceAfterDailyDeduction, 0), remaining_days: daysLeft };
+                        return { ...sub, balance: Math.max(balanceAfterDailyDeduction, 0), remaining_days: daysLeft, formattedCutoffDate: cutoffDate };
                     } else {
+                        console.log('No se requiere deducción hoy');
                         // Si no se aplica deducción, calcula los días restantes según el balance actual
                         const effectiveDays = Math.floor(currentBalance / dailyCost);
                         return { ...sub, remaining_days: effectiveDays };
@@ -99,7 +109,6 @@ const useSubscription = () => {
                 email,
                 alias,
                 balance: parseFloat(balance),
-                //rate: parseFloat(rate),
                 recharge_date: recharge_date ? recharge_date : new Date().toISOString(),
             },
         ]);
