@@ -3,8 +3,13 @@ import * as Notifications from 'expo-notifications';
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { View, Text, StyleSheet } from 'react-native';
+import MainScreen from './screens/MainScreen';
+import RechargeScreen from './screens/RechargeScreen';
+import AccountScreen from './screens/AccountScreen';
 import SubscriptionDashboard from './SuscriptionDashboard';
 import * as Device from 'expo-device';
+
 
 
 async function registerForPushNotificationsAsync() {
@@ -36,13 +41,19 @@ export default function App() {
     }, []);
 
     return (
+        
     <NavigationContainer>
-        <Stack.Navigator>
-        <Stack.Screen name="Dashboard" component={SubscriptionDashboard} />
+        <Stack.Navigator initialRouteName="MainScreen">
+            <Stack.Screen name="MainScreen" component={MainScreen} />
+            <Stack.Screen name="SubscriptionDashboard" component={SubscriptionDashboard} />
+            <Stack.Screen name="AccountScreen" component={AccountScreen} />
+            <Stack.Screen name="RechargeScreen" component={RechargeScreen} />
         </Stack.Navigator>
     </NavigationContainer>
 
 
-
     );
-}
+};
+
+
+

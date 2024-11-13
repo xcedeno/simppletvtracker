@@ -9,6 +9,7 @@ import TimeRemainingChart from './components/TimeRemainingCharts';
 import useSubscription from './hooks/useSubscription';
 import { v4 as uuidv4 } from 'uuid';
 import Clock from './components/Clock';
+import { LinearGradient } from 'react-native-svg';
 
 
 const SubscriptionDashboard = () => {
@@ -93,6 +94,7 @@ const SubscriptionDashboard = () => {
     
 
     return (
+        
         <View style={styles.container}>
             <Clock />
         <ScrollView contentContainerStyle={styles.scrollViewContent}>
@@ -205,6 +207,7 @@ const styles = StyleSheet.create({
     paddingBottom: 50,
     height: '90vh',
     overflowY: 'scroll',
+    
     },
     scrollViewContent: { 
         flexGrow: 1,
