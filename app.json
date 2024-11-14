@@ -9,7 +9,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#FAFAFA"
     },
     "ios": {
       "supportsTablet": true
@@ -23,6 +23,9 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "notification": {
+      "vapidPublicKey": "BGSKSAsrsYyV0H0oxB5IzeWcEQfKFVJtgXvBpOuAbJoD3dTUOF8dXqczYYof8oFAimSLbmiSS2M_XLKJRwnAGOY"
     },
     "extra": {
       "eas": {
