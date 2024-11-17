@@ -7,7 +7,7 @@ import SubscriptionForm from './forms/SubscriptionForm';
 import SubscriptionList from './lists/SubscriptionList';
 import TimeRemainingChart from './components/TimeRemainingCharts';
 import useSubscription from './hooks/useSubscription';
-import { v4 as uuidv4 } from 'uuid';
+//import { v4 as uuidv4 } from 'uuid';
 import Clock from './components/Clock';
 import { LinearGradient } from 'react-native-svg';
 
@@ -24,7 +24,7 @@ const SubscriptionDashboard = () => {
         selectedSubscriptionForDeletion,
         setSelectedSubscriptionForDeletion
     ] = useState(null);
-    const newUuid = uuidv4();  // Genera un UUID
+    
     const { 
         subscriptions,
         isModalVisible,
@@ -242,6 +242,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 5, // Adds shadow effect on Android
+        boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
     },
     modalTitle: {
         fontSize: 18,

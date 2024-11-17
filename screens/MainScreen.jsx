@@ -76,6 +76,7 @@ const styles = StyleSheet.create({
         shadowRadius: 5,
         elevation: 5,
         alignItems: 'center',
+        boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
     },
     cardTitle: {
         fontSize: 18,
