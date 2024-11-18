@@ -3,7 +3,6 @@ import * as Notifications from 'expo-notifications';
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { View, Text, StyleSheet } from 'react-native';
 import MainScreen from './screens/MainScreen';
 import RechargeScreen from './screens/RechargeScreen';
 import AccountScreen from './screens/AccountScreen';

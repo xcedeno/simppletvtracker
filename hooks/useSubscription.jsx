@@ -1,187 +1,203 @@
-// hooks/useSubscription.js
-import {Platform} from 'react-native';
-import { useState, useEffect } from 'react';
-import { supabase } from '../db/SupabaseClient';
-import moment from 'moment';
-import * as Notifications from 'expo-notifications';
+/* eslint-disable prettier/prettier */
+import { Platform, AppState } from "react-native";
+import { useState, useEffect } from "react";
+import { supabase } from "../db/SupabaseClient";
+import moment from "moment";
+import * as Notifications from "expo-notifications";
+
+const DAILY_COST = 0.98;
 
 const useSubscription = () => {
-    const [subscriptions, setSubscriptions] = useState([]);
-    const [isModalVisible, setIsModalVisible] = useState(false);
-    const [selectedSubscriptionId, setSelectedSubscriptionId] = useState(null);
-    const [rechargeAmount, setRechargeAmount] = useState('');
+const [subscriptions, setSubscriptions] = useState([]);
+const [isModalVisible, setIsModalVisible] = useState(false);
+const [selectedSubscriptionId, setSelectedSubscriptionId] = useState(null);
+const [rechargeAmount, setRechargeAmount] = useState("");
+const appState = useState(AppState.currentState);
 
-    useEffect(() => {
-        fetchSubscriptions();
-    
-        const intervalId = setInterval(fetchSubscriptions, 24 * 60 * 60 * 1000); // cada 24 horas
-        
-        return () => clearInterval(intervalId);
-    }, []);
+useEffect(() => {
+fetchSubscriptions();
 
-    const fetchSubscriptions = async () => {
-        const { data, error } = await supabase.from('suscriptions').select('*');
-        if (error) {
-            console.log('Error fetching data:', error);
-        } else {
-            const updatedData = await Promise.all(
-                data.map(async (sub) => {
-                    const dailyCost = 0.98;
-                    const currentBalance = parseFloat(sub.balance);
-                    const lastRechargeDate = moment(sub.recharge_date);
-                    const lastDeductionDate = sub.last_deduction_date 
-                        ? moment(sub.last_deduction_date) 
-                        : null;
-                    const today = moment();
-                    console.log(`Verificando deducción para ${sub.alias}`);
-                    console.log(`Last Deduction Date: ${lastDeductionDate}, Today: ${today}`);
-                    // Verificar si es necesario realizar una deducción diaria
-                    if (!lastDeductionDate || today.diff(lastDeductionDate, 'hours') >= 24) {
-                        // Calcular los días desde la última deducción (o recarga si no hay deducción)
-                        console.log('Es necesario realizar la deducción diaria');
-                        const hoursSinceLastDeduction = lastDeductionDate 
-                            ? today.diff(lastDeductionDate, 'hours') 
-                            : today.diff(lastRechargeDate, 'hours');
-                            const daysSinceLastDeduction = Math.floor(hoursSinceLastDeduction / 24);
-    
-                        // Calcular el nuevo balance después de la deducción
-                        const balanceAfterDailyDeduction = currentBalance - (daysSinceLastDeduction * dailyCost);
-                        const effectiveDays = Math.floor(balanceAfterDailyDeduction / dailyCost);
-                        const daysLeft = Math.max(effectiveDays, 0);
+// Listener para AppState
+const subscription = AppState.addEventListener(
+    "change",
+    handleAppStateChange,
+);
 
-                        
-    
-                        console.log(`Subscription: ${sub.alias}`);
-                        console.log(`Days Since Last Deduction: ${daysSinceLastDeduction}`);
-                        console.log(`Balance After Deduction: ${balanceAfterDailyDeduction}`);
-                        console.log(`Remaining Days: ${daysLeft}`);
-    
-                        // Actualizar balance y fecha de última deducción en la base de datos
-                        const { error: updateError } = await supabase
-                            .from('suscriptions')
-                            .update({
-                                balance: Math.max(balanceAfterDailyDeduction, 0),
-                                last_deduction_date: today.toISOString(), // Actualizar a la fecha de hoy
-                            })
-                            .eq('id', sub.id);
-    
-                        if (updateError) {
-                            console.log(`Error updating balance for ${sub.alias}:`, updateError);
-                        }
-    
-                        // Enviar notificación si quedan pocos días
-                        if (daysLeft <= 3) {
-                            sendNotification(sub.alias, daysLeft);
-                        }
-    
-                        return { ...sub, balance: Math.max(balanceAfterDailyDeduction, 0), remaining_days: daysLeft, formattedCutoffDate: cutoffDate };
-                    } else {
-                        console.log('No se requiere deducción hoy');
-                        // Si no se aplica deducción, calcula los días restantes según el balance actual
-                        const effectiveDays = Math.floor(currentBalance / dailyCost);
-                        return { ...sub, remaining_days: effectiveDays };
-                    }
-                })
-            );
-    
-            console.log('Updated Data:', updatedData);
-            setSubscriptions(updatedData);
-        }
-    };
-    
+return () => subscription.remove();
+// eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
 
-    const sendNotification = async (alias, daysLeft) => {
-        if (Platform.OS === 'ios' || Platform.OS === 'android') {
-            await Notifications.scheduleNotificationAsync({
-                content: {
-                    title: '¡Suscripción Próxima a Vencer!',
-                    body: `La suscripción de ${alias} vence en ${daysLeft} días.`,
-                },
-                trigger: { seconds: 1 },
-            });
-        } else {
-            console.log(`Notification for ${alias}: ${daysLeft} days left.`);
-        }
-    };
-    const addSubscription = async (email, alias, balance, recharge_date) => {
-        const { data, error } = await supabase.from('suscriptions').insert([
-            {
-                email,
-                alias,
-                balance: parseFloat(balance),
-                recharge_date: recharge_date ? recharge_date : new Date().toISOString(),
-            },
-        ]);
-        if (error) {
-            console.log('Error inserting subscription:', error);
-        } else {
-            fetchSubscriptions();
-            console.log('Suscripción agregada exitosamente');
-        }
-    };
+const handleAppStateChange = (nextAppState) => {
+if (appState !== "active" && nextAppState === "active") {
+    fetchSubscriptions();
+}
+};
 
-    const deleteSubscription = async (id) => {
-        const { error } = await supabase.from('suscriptions').delete().eq('id', id);
-        if (error) {
-            console.log('Error deleting subscription:', error);
-        } else {
-            fetchSubscriptions();
-        }
-    };
+const fetchSubscriptions = async () => {
+try {
+    const { data, error } = await supabase.from("suscriptions").select("*");
+    if (error) throw error;
 
-    const rechargeSubscription = async () => {
-        if (!selectedSubscriptionId) {
-            console.log('No subscription ID selected');
-            return;  // Asegúrate de que haya un ID seleccionado
-        }
-    
-        const { data, error } = await supabase
-            .from('suscriptions')
-            .select('balance')
-            .eq('id', selectedSubscriptionId)
-            .single();
-    
-        if (error) {
-            console.log('Error fetching balance:', error);
-            return;
-        }
-    
-        // Si el balance se recupera correctamente, actualizamos el balance
-        const updatedBalance = parseFloat(data.balance) + parseFloat(rechargeAmount);
-    
-        const { updateError } = await supabase
-            .from('suscriptions')
-            .update({
-                balance: updatedBalance,
-                recharge_date: new Date().toISOString(),
-            })
-            .eq('id', selectedSubscriptionId);
-    
-        if (updateError) {
-            console.log('Error updating subscription:', updateError);
-        } else {
-            // Actualiza las suscripciones y cierra el modal
-            fetchSubscriptions();
-            setIsModalVisible(false);
-            setRechargeAmount('');
-        }
-    };
-    
-    
+    const updatedData = await Promise.all(data.map(processSubscription));
+    setSubscriptions(updatedData);
+} catch (error) {
+    console.log("Error fetching subscriptions:", error);
+}
+};
+
+const processSubscription = async (sub) => {
+const currentBalance = parseFloat(sub.balance);
+const lastRechargeDate = moment(sub.recharge_date);
+const lastDeductionDate = sub.last_deduction_date
+    ? moment(sub.last_deduction_date)
+    : null;
+const today = moment();
+
+// Determina si es necesario deducir
+const shouldDeduct =
+    !lastDeductionDate || today.diff(lastDeductionDate, "hours") >= 24;
+
+if (shouldDeduct) {
+    const daysSinceLastDeduction = lastDeductionDate
+    ? today.diff(lastDeductionDate, "days")
+    : today.diff(lastRechargeDate, "days");
+
+    const balanceAfterDeduction =
+    currentBalance - daysSinceLastDeduction * DAILY_COST;
+    const effectiveDays = Math.floor(balanceAfterDeduction / DAILY_COST);
+    const daysLeft = Math.max(effectiveDays, 0);
+
+    // Actualiza la base de datos
+    await updateSubscriptionBalance(sub.id, balanceAfterDeduction);
+
+    // Envía notificación si días restantes <= 3
+    if (daysLeft <= 3) {
+    sendNotification(sub.alias, daysLeft);
+    }
 
     return {
-        subscriptions,
-        isModalVisible,
-        setIsModalVisible,
-        selectedSubscriptionId,
-        setSelectedSubscriptionId,
-        rechargeAmount,
-        setRechargeAmount,
-        addSubscription,
-        deleteSubscription,
-        rechargeSubscription,
-        fetchSubscriptions,
+    ...sub,
+    balance: Math.max(balanceAfterDeduction, 0),
+    remaining_days: daysLeft,
     };
+} else {
+    const effectiveDays = Math.floor(currentBalance / DAILY_COST);
+    return { ...sub, remaining_days: effectiveDays };
+}
+};
+
+const updateSubscriptionBalance = async (id, newBalance) => {
+try {
+    const { error } = await supabase
+    .from("suscriptions")
+    .update({
+        balance: Math.max(newBalance, 0),
+        last_deduction_date: new Date().toISOString(),
+    })
+    .eq("id", id);
+
+    if (error) throw error;
+} catch (error) {
+    console.log("Error updating subscription balance:", error);
+}
+};
+
+const sendNotification = async (alias, daysLeft) => {
+if (Platform.OS === "ios" || Platform.OS === "android") {
+    await Notifications.scheduleNotificationAsync({
+    content: {
+        title: "¡Suscripción Próxima a Vencer!",
+        body: `La suscripción de ${alias} vence en ${daysLeft} días.`,
+    },
+    trigger: { seconds: 1 },
+    });
+} else {
+    console.log(`Notification for ${alias}: ${daysLeft} days left.`);
+}
+};
+
+const addSubscription = async (email, alias, balance, recharge_date) => {
+try {
+    const { error } = await supabase.from("suscriptions").insert([
+    {
+        email,
+        alias,
+        balance: parseFloat(balance),
+        recharge_date: recharge_date || new Date().toISOString(),
+    },
+    ]);
+
+    if (error) throw error;
+
+    fetchSubscriptions();
+} catch (error) {
+    console.log("Error adding subscription:", error);
+}
+};
+
+const deleteSubscription = async (id) => {
+try {
+    const { error } = await supabase
+    .from("suscriptions")
+    .delete()
+    .eq("id", id);
+    if (error) throw error;
+
+    fetchSubscriptions();
+} catch (error) {
+    console.log("Error deleting subscription:", error);
+}
+};
+
+const rechargeSubscription = async () => {
+if (!selectedSubscriptionId || !rechargeAmount) {
+    console.log("No subscription ID or recharge amount provided");
+    return;
+}
+
+try {
+    const { data, error } = await supabase
+    .from("suscriptions")
+    .select("balance")
+    .eq("id", selectedSubscriptionId)
+    .single();
+
+    if (error) throw error;
+
+    const updatedBalance =
+    parseFloat(data.balance) + parseFloat(rechargeAmount);
+
+    const { updateError } = await supabase
+    .from("suscriptions")
+    .update({
+        balance: updatedBalance,
+        recharge_date: new Date().toISOString(),
+    })
+    .eq("id", selectedSubscriptionId);
+
+    if (updateError) throw updateError;
+
+    fetchSubscriptions();
+    setIsModalVisible(false);
+    setRechargeAmount("");
+} catch (error) {
+    console.log("Error recharging subscription:", error);
+}
+};
+
+return {
+subscriptions,
+isModalVisible,
+setIsModalVisible,
+selectedSubscriptionId,
+setSelectedSubscriptionId,
+rechargeAmount,
+setRechargeAmount,
+addSubscription,
+deleteSubscription,
+rechargeSubscription,
+fetchSubscriptions,
+};
 };
 
 export default useSubscription;
