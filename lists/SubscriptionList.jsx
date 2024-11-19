@@ -42,12 +42,11 @@ const SubscriptionList = ({
   }, []);
 
   useEffect(() => {
-    const animations = {};
+    const newAnimations = {};
     subscriptions.forEach((item) => {
-      if (item.remaining_days <= 3) {
-        const colorAnim = new Animated.Value(0); // 0 -> color inicial, 1 -> color de alerta
-        const opacityAnim = new Animated.Value(1); // Opacidad inicial
-
+      if (!animationValues[item.id] && item.remaining_days <= 3) {
+        const colorAnim = new Animated.Value(0);
+        const opacityAnim = new Animated.Value(1);
         Animated.loop(
           Animated.sequence([
             Animated.parallel([
@@ -71,16 +70,16 @@ const SubscriptionList = ({
               Animated.timing(opacityAnim, {
                 toValue: 1,
                 duration: 600,
-                useNativeDriver: true,
+                useNativeDriver: false,
               }),
             ]),
           ])
         ).start();
-
-        animations[item.id] = { colorAnim, opacityAnim };
+        newAnimations[item.id] = { colorAnim, opacityAnim };
       }
     });
-    setAnimationValues(animations);
+    setAnimationValues((prev) => ({ ...prev, ...newAnimations }));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subscriptions]);
 
   const toggleExpand = (id) => {
@@ -90,66 +89,94 @@ const SubscriptionList = ({
     }));
   };
 
+  const renderItem = ({ item }) => {
+    const animation = animationValues[item.id];
+    const backgroundColor =
+      animation?.colorAnim?.interpolate({
+        inputRange: [0, 1],
+        outputRange: ["#f9f9f9", "#F44336"],
+      }) || "#f9f9f9";
+
+    return (
+      <Animated.View
+        style={[
+          styles.item,
+          {
+            backgroundColor,
+            opacity: animation?.opacityAnim || 1,
+          },
+        ]}
+      >
+        <Pressable onPress={() => toggleExpand(item.id)}>
+          <Text style={styles.aliasText}>{item.alias}</Text>
+        </Pressable>
+        {expandedItems[item.id] && (
+          <View style={styles.expandedContent}>
+            <Text>Correo: {item.email}</Text>
+            <Text>Saldo: {item.balance} $</Text>
+            <Text>Tasa BCV: {rate ? `${rate} USD` : "Cargando..."}</Text>
+            <Text>Días Restantes: {item.remaining_days} Días</Text>
+
+            <View style={styles.buttonsContainer}>
+              <Pressable
+                style={styles.editButton}
+                onPress={() => editSubscription(item.id)}
+              >
+                <Text style={styles.buttonText}>Editar</Text>
+              </Pressable>
+
+              <Pressable
+                style={styles.deleteButton}
+                onPress={() => deleteSubscription(item.id)}
+              >
+                <Text style={styles.buttonText}>Eliminar</Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
+      </Animated.View>
+    );
+  };
+
   return (
     <FlatList
       data={subscriptions}
       keyExtractor={(item) => item.id.toString()}
-      renderItem={({ item }) => {
-        const animation = animationValues[item.id];
-        const backgroundColor =
-          animation?.colorAnim?.interpolate({
-            inputRange: [0, 1],
-            outputRange: ["#f9f9f9", "#F44336"],
-          }) || "#f9f9f9";
-
-        return (
-          <Animated.View
-            style={[
-              styles.item,
-              {
-                backgroundColor,
-                opacity: animation?.opacityAnim || 1,
-              },
-            ]}
-          >
-            <Pressable onPress={() => toggleExpand(item.id)}>
-              <Text style={styles.aliasText}>{item.alias}</Text>
-            </Pressable>
-            {expandedItems[item.id] && (
-              <View style={styles.expandedContent}>
-                <Text>Correo: {item.email}</Text>
-                <Text>Saldo: {item.balance} $</Text>
-                <Text>Tasa BCV: {rate ? `${rate} USD` : "Cargando..."}</Text>
-                <Text>Días Restantes: {item.remaining_days} Días</Text>
-
-                <View style={styles.buttonsContainer}>
-                  <Pressable
-                    style={styles.editButton}
-                    onPress={() => editSubscription(item.id)}
-                  >
-                    <Text style={styles.buttonText}>Editar</Text>
-                  </Pressable>
-
-                  <Pressable
-                    style={styles.deleteButton}
-                    onPress={() => deleteSubscription(item.id)}
-                  >
-                    <Text style={styles.buttonText}>Eliminar</Text>
-                  </Pressable>
-                </View>
-              </View>
-            )}
-          </Animated.View>
-        );
-      }}
+      renderItem={renderItem}
+      contentContainerStyle={styles.listContainer}
+      ListEmptyComponent={
+        <View style={styles.emptyState}>
+          <Text>No subscriptions available</Text>
+        </View>
+      }
     />
   );
 };
 
 const styles = StyleSheet.create({
-  item: { padding: 15, marginBottom: 10, borderRadius: 5 },
-  aliasText: { fontSize: 16, fontWeight: "bold", color: "#333" },
-  expandedContent: { marginTop: 10 },
+  listContainer: {
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+  },
+  item: {
+    padding: 15,
+    marginBottom: 10,
+    borderRadius: 5,
+    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  aliasText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  expandedContent: {
+    marginTop: 10,
+  },
   buttonsContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -168,6 +195,10 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+  emptyState: {
+    alignItems: "center",
+    marginTop: 20,
   },
 });
 

@@ -6,14 +6,11 @@ Text,
 StyleSheet,
 Alert,
 Modal,
-TextInput,
 Button,
 ScrollView,
 } from "react-native";
 import { supabase } from "./db/SupabaseClient";
 import SubscriptionForm from "./forms/SubscriptionForm";
-import SubscriptionList from "./lists/SubscriptionList";
-import TimeRemainingChart from "./components/TimeRemainingCharts";
 import useSubscription from "./hooks/useSubscription";
 import Clock from "./components/Clock";
 
@@ -23,20 +20,10 @@ const [alias, setAlias] = useState("");
 const [balance, setBalance] = useState("");
 const [rechargeDate, setRechargeDate] = useState("");
 const [showSuccessModal, setShowSuccessModal] = useState(false);
-const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-const [selectedSubscriptionForDeletion, setSelectedSubscriptionForDeletion] =
     useState(null);
 
 const {
-    subscriptions,
-    isModalVisible,
-    setIsModalVisible,
-    setSelectedSubscriptionId,
-    rechargeAmount,
-    setRechargeAmount,
     addSubscription,
-    deleteSubscription,
-    rechargeSubscription,
     fetchSubscriptions,
 } = useSubscription();
 const [refresh, setRefresh] = useState(false);
@@ -59,10 +46,7 @@ const checkDatabaseConnection = async () => {
     }
 };
 
-const openRechargeModal = (id) => {
-    setSelectedSubscriptionId(id);
-    setIsModalVisible(true);
-};
+
 
 const handleAddSubscription = async () => {
     await addSubscription(email, alias, balance, rechargeDate);
@@ -71,10 +55,7 @@ const handleAddSubscription = async () => {
     setShowSuccessModal(true);
 };
 
-const handleDeleteSubscription = (subscriptionId) => {
-    setSelectedSubscriptionForDeletion(subscriptionId);
-    setShowDeleteConfirmation(true);
-};
+
 
 const clearForm = () => {
     setEmail("");
@@ -85,20 +66,7 @@ const clearForm = () => {
 const closeSuccessModal = () => {
     setShowSuccessModal(false);
 };
-const handleRecharge = async () => {
-    // Asegúrate de que el monto de recarga es válido
-    if (
-    !rechargeAmount ||
-    isNaN(rechargeAmount) ||
-    parseFloat(rechargeAmount) <= 0
-    ) {
-    Alert.alert("Error", "Por favor ingresa un monto válido.");
-    return;
-    }
 
-    // Llamamos a la función de recarga pasando el monto
-    await rechargeSubscription(rechargeAmount);
-};
 
 return (
     <View style={styles.container}>
@@ -134,82 +102,6 @@ return (
                 ¡Suscripción agregada con éxito!
             </Text>
             <Button title="Cerrar" onPress={closeSuccessModal} />
-            </View>
-        </View>
-        </Modal>
-
-        <ScrollView style={styles.subscriptionsContainer}>
-        <Text style={styles.title}>Cuentas de Suscripción</Text>
-        <SubscriptionList
-            subscriptions={subscriptions}
-            editSubscription={openRechargeModal}
-            deleteSubscription={handleDeleteSubscription}
-        />
-        <Modal
-            visible={showDeleteConfirmation}
-            transparent={true}
-            animationType="slide"
-            onRequestClose={() => setShowDeleteConfirmation(false)}
-        >
-            <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>
-                ¿Estás seguro de que deseas eliminar esta suscripción?
-                </Text>
-                <View style={styles.buttonContainer}>
-                <Button
-                    title="Sí"
-                    onPress={() => {
-                      deleteSubscription(selectedSubscriptionForDeletion); // Eliminar la suscripción
-                      setShowDeleteConfirmation(false); // Cerrar el modal
-                    }}
-                />
-                <Button
-                    title="No"
-                    onPress={() => setShowDeleteConfirmation(false)} // Cerrar el modal sin eliminar
-                />
-                </View>
-            </View>
-            </View>
-        </Modal>
-        <Text style={styles.title}>Dias Restantes</Text>
-        {subscriptions.map((sub) => (
-            <View key={sub.id} style={styles.item}>
-            <Text style={styles.alias}>{sub.alias}</Text>
-            <Text>
-                Días Restantes: {sub.remaining_days} días{" "}
-                {sub.remaining_days > 3 ? "✅" : "❌"}
-            </Text>
-              {/* Ajustamos el tamaño del gráfico dentro del card */}
-            <View style={styles.chartContainer}>
-                <TimeRemainingChart remainingDays={sub.remaining_days} />
-            </View>
-            </View>
-        ))}
-        </ScrollView>
-
-        <Modal
-        visible={isModalVisible}
-        transparent={true}
-        animationType="slide"
-        >
-        <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Agregar Saldo</Text>
-            <TextInput
-                style={styles.input}
-                placeholder="Monto de recarga"
-                keyboardType="numeric"
-                value={rechargeAmount}
-                onChangeText={setRechargeAmount}
-            />
-            <View style={styles.buttonContainer}>
-                <Button title="Confirmar" onPress={handleRecharge} />
-                <Button
-                title="Cancelar"
-                onPress={() => setIsModalVisible(false)}
-                />
-            </View>
             </View>
         </View>
         </Modal>

@@ -4,5 +4,10 @@ module.exports = function (api) {
     presets: [
       "module:metro-react-native-babel-preset", // Para React Native estándar
     ],
+    plugins: [
+      ["@babel/plugin-transform-class-properties", { loose: true }],
+      ["@babel/plugin-transform-private-methods", { loose: true }],
+      ["@babel/plugin-transform-private-property-in-object", { loose: true }],
+    ],
   };
 };
