@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 // TimeRemainingChart.js
 import React from "react";
-import { View, Text, Dimensions } from "react-native";
+import { View, Text, StyleSheet, Dimensions } from "react-native";
 import { BarChart } from "react-native-chart-kit";
 
 const screenWidth = Dimensions.get("window").width;
@@ -26,10 +26,9 @@ datasets: [
 };
 
 return (
-<View style={{ paddingHorizontal: 20 }}>
-    <Text style={{ textAlign: "center", fontSize: 16, marginBottom: 10 }}>
-    Días Restantes: {remainingDays}
-    </Text>
+    
+<View style={styles.container}>
+    <Text style={styles.text}>Días Restantes: {remainingDays}</Text>
     <BarChart
     data={data}
     width={screenWidth - 150} // Adjusts to the screen width
@@ -61,5 +60,17 @@ return (
 </View>
 );
 };
+const styles = StyleSheet.create({
+    container: {
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: 20, // Añade espacio entre gráficos si hay múltiples
+    },
+    text: {
+        textAlign: "center",
+        fontSize: 16,
+        marginBottom: 10,
+    },
+});
 
 export default TimeRemainingChart;

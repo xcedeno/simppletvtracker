@@ -144,6 +144,7 @@ const SubscriptionList = ({
       keyExtractor={(item) => item.id.toString()}
       renderItem={renderItem}
       contentContainerStyle={styles.listContainer}
+      nestedScrollEnabled={true}
       ListEmptyComponent={
         <View style={styles.emptyState}>
           <Text>No subscriptions available</Text>
