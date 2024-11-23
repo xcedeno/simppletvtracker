@@ -61,9 +61,8 @@ await rechargeSubscription(rechargeAmount);
 return (
     
 <ScrollView style={styles.container}
-contentContainerStyle={styles.scrollViewContent}
-            showsVerticalScrollIndicator={false}>
-    <View>
+>
+    
     <Button title="Enviar Notificación" onPress={handleSendNotification} />
     <Text style={styles.title}>Cuentas de Suscripción</Text>
     <SubscriptionList
@@ -82,7 +81,7 @@ contentContainerStyle={styles.scrollViewContent}
         <TimeRemainingChart remainingDays={sub.remaining_days} />
         </View>
     ))}
-    </View>
+    
 
     {/* Delete Confirmation Modal */}
     <DeleteConfirmationModal

@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Animated,
   Pressable,
+  Button,
 } from "react-native";
 import axios from "axios";
 
@@ -18,6 +19,13 @@ const SubscriptionList = ({
   const [rate, setRate] = useState(null);
   const [expandedItems, setExpandedItems] = useState({});
   const [animationValues, setAnimationValues] = useState({});
+  const [visibleSubscriptions, setVisibleSubscriptions] = useState([]);
+  const [limit, setLimit] = useState(20); // Controla el número de registros visibles
+
+  useEffect(() => {
+    // Actualizar la lista visible cuando se cambia el límite
+    setVisibleSubscriptions(subscriptions.slice(0, limit));
+  }, [subscriptions, limit]);
 
   useEffect(() => {
     const fetchRate = async () => {
@@ -68,7 +76,7 @@ const SubscriptionList = ({
                 useNativeDriver: false,
               }),
               Animated.timing(opacityAnim, {
-                toValue: 1,
+                toValue: 0.8,
                 duration: 600,
                 useNativeDriver: false,
               }),
@@ -79,7 +87,7 @@ const SubscriptionList = ({
       }
     });
     setAnimationValues((prev) => ({ ...prev, ...newAnimations }));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subscriptions]);
 
   const toggleExpand = (id) => {
@@ -139,22 +147,46 @@ const SubscriptionList = ({
   };
 
   return (
-    <FlatList
-      data={subscriptions}
-      keyExtractor={(item) => item.id.toString()}
-      renderItem={renderItem}
-      contentContainerStyle={styles.listContainer}
-      nestedScrollEnabled={true}
-      ListEmptyComponent={
-        <View style={styles.emptyState}>
-          <Text>No subscriptions available</Text>
-        </View>
-      }
-    />
+    <View style={styles.container}>
+      {/* Botones de selección */}
+      <View style={styles.paginationContainer}>
+        <Button
+          title="Mostrar 10"
+          onPress={() => setLimit(10)}
+          color={limit === 10 ? "#6200EE" : "#ccc"}
+        />
+        
+        <Button
+          title="Mostrar todos"
+          onPress={() => setLimit(subscriptions.length)}
+          color={limit === subscriptions.length ? "#6200EE" : "#ccc"}
+        />
+      </View>
+      <FlatList
+        data={visibleSubscriptions}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderItem}
+        contentContainerStyle={styles.listContainer}
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <Text>No subscriptions available</Text>
+          </View>
+        }
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    backgroundColor: "#f4f4f4",
+  },
+  paginationContainer: {
+    
+    justifyContent: "space-around",
+    marginVertical: 10,
+  },
   listContainer: {
     paddingHorizontal: 15,
     paddingVertical: 10,

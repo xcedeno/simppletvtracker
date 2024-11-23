@@ -35,8 +35,12 @@ if (appState !== "active" && nextAppState === "active") {
 
 const fetchSubscriptions = async () => {
 try {
-    const { data, error } = await supabase.from("suscriptions").select("*");
+    const { data, error } = await supabase
+    .from("suscriptions")
+    .select("*");;
+    
     if (error) throw error;
+    
 
     const updatedData = await Promise.all(data.map(processSubscription));
     setSubscriptions(updatedData);
