@@ -1,101 +1,114 @@
 /* eslint-disable prettier/prettier */
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+// Componente de Botón Reutilizable
+const CustomButton = ({ title, onPress }) => (
+<TouchableOpacity 
+style={styles.button} // Fallback con StyleSheet
+onPress={onPress}
+activeOpacity={0.8} // Mejora la respuesta táctil
+>
+<Text style={styles.buttonText}>{title}</Text>
+</TouchableOpacity>
+);
 
+// Componente de Contenedor de Logos
+const LogoContainer = () => (
+<View style={styles.logoContainer}>
+<Image source={require("../assets/ikin.png")} style={styles.logo} />
+<Image source={require("../assets/simpletv.png")} style={styles.logo} />
+</View>
+);
+
+// Pantalla Principal
 const MainScreen = ({ navigation }) => {
-    return (
-        <View style={styles.container}>
-        {/* Contenedor de logos */}
-        <View style={styles.logoContainer}>
-            <Image
-            source={require("../assets/ikin.png")} // Cambia la ruta a la ubicación de tu logo
-            style={styles.logo}
-            />
-            <Image
-            source={require("../assets/simpletv.png")} // Cambia la ruta a la ubicación de tu segundo logo
-            style={styles.logo}
-            />
-        </View>
+return (
+    <LinearGradient
+      // Colores del degradado
+      colors={["rgba(0,0,255,1)", "rgba(0,255,255,1)"]} // De azul a cian
+      start={{ x: 0, y: 0 }} // Punto de inicio (arriba izquierda)
+      end={{ x: 1, y: 1 }} // Punto final (abajo derecha)
+      style={styles.container} // Aplica el estilo del contenedor
+    >
+<View style={styles.container}>
+    {/* Contenedor de logos */}
+    <LogoContainer />
 
-        {/* Título */}
-        <Text style={styles.title}>Pantalla Principal</Text>
+    {/* Título */}
+    <Text style={styles.title}>Pantalla Principal</Text>
 
-        {/* Contenedor de las tarjetas */}
-        <View style={styles.cardContainer}>
-            <TouchableOpacity
-            style={styles.card}
-            onPress={() => navigation.navigate("SubscriptionDashboard")}
-            >
-            <Text style={styles.cardTitle}>Ir al Dashboard</Text>
-            </TouchableOpacity>
+    {/* Contenedor de las tarjetas */}
+    <View style={styles.cardContainer}>
+    <CustomButton
+        title="Ir al Dashboard"
+        onPress={() => navigation.navigate("SubscriptionDashboard")}
+    />
+    <CustomButton
+        title="Consultar Cuenta"
+        onPress={() => navigation.navigate("AccountScreen")}
+    />
+    <CustomButton
+        title="Recargar Cuenta"
+        onPress={() => navigation.navigate("RechargeScreen")}
+    />
+    </View>
+</View>
+</LinearGradient>
+);
+};
 
-            <TouchableOpacity
-            style={styles.card}
-            onPress={() => navigation.navigate("AccountScreen")}
-            >
-            <Text style={styles.cardTitle}>Consultar Cuenta</Text>
-            </TouchableOpacity>
+const styles = StyleSheet.create({
+container: {
+flex: 1,
+justifyContent: "center",
+alignItems: "center",
+padding: 20,
 
-            <TouchableOpacity
-            style={styles.card}
-            onPress={() => navigation.navigate("RechargeScreen")}
-            >
-            <Text style={styles.cardTitle}>Recargar Cuenta</Text>
-            </TouchableOpacity>
-        </View>
-        </View>
-    );
-    };
-
-    const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#f4f4f4",
-        padding: 20,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: "bold",
-        marginBottom: 40,
-    },
-    cardContainer: {
-        flexDirection: "column",
-        width: "100%",
-        alignItems: "center",
-    },
-    card: {
-        width: "90%",
-        padding: 20,
-        marginVertical: 10,
-        backgroundColor: "blue", // Color de fondo básico
-        borderRadius: 10,
-        elevation: 5,
-        alignItems: "center",
-        boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-    },
-    cardTitle: {
-        fontSize: 18,
-        fontWeight: "bold",
-        color: "white",
-    },
-    logoContainer: {
-        flexDirection: "row", // Para alinear los logos en fila
-        justifyContent: "center", // Para espaciar los logos
-        width: "100%", // Asegura que los logos ocupen el ancho completo de la pantalla
-        marginBottom: 20, // Espacio entre los logos y el texto
-    },
-    logo: {
-        width: 150, // Ajusta el tamaño de los logos
-        height: 150, // Ajusta el tamaño de los logos
-        resizeMode: "contain", // Para que la imagen no se distorsione
-        marginHorizontal: 10, // Espacio entre los logos
-    },
-    text: {
-        fontSize: 20,
-        fontWeight: "bold",
-    },
+},
+title: {
+fontSize: 24,
+fontWeight: "bold",
+color: "white",
+marginBottom: 20,
+},
+cardContainer: {
+width: "100%",
+alignItems: "center",
+marginTop: 10,
+},
+button: {
+backgroundColor: "rgba(50,100,200,0.9)",
+paddingVertical: 15,
+paddingHorizontal: 20,
+borderRadius: 15,
+width: "90%",
+alignItems: "center",
+marginVertical: 10,
+elevation: 5, // Sombra para Android
+shadowColor: "white", // Sombra para iOS
+shadowOffset: { width: 0, height: 2 },
+shadowOpacity: 0.25,
+shadowRadius: 3.84,
+},
+buttonText: {
+fontSize: 18,
+color: "white",
+fontWeight: "bold",
+},
+logoContainer: {
+flexDirection: "row",
+justifyContent: "center",
+alignItems: "center",
+width: "100%",
+marginBottom: 20,
+},
+logo: {
+width: 100,
+height: 100,
+resizeMode: "contain",
+marginHorizontal: 10,
+},
 });
 
 export default MainScreen;

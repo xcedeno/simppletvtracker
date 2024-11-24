@@ -8,6 +8,7 @@ import RechargeScreen from "./screens/RechargeScreen";
 import AccountScreen from "./screens/AccountScreen";
 import SubscriptionDashboard from "./SuscriptionDashboard";
 import * as Device from "expo-device";
+import "nativewind/types.d";
 
 async function registerForPushNotificationsAsync() {
   let token;

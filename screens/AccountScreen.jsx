@@ -7,7 +7,7 @@ import useSubscription from "../hooks/useSubscription";
 import DeleteConfirmationModal from "../modals/DeleteConfirmationModal";
 import RechargeModal from "../modals/RechargeModal";
 import { sendNotification } from "../api";
-
+import { LinearGradient } from "expo-linear-gradient";
 const AccountScreen = () => {
 const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 const [selectedSubscriptionForDeletion, setSelectedSubscriptionForDeletion] =
@@ -59,11 +59,16 @@ await rechargeSubscription(rechargeAmount);
 };
 
 return (
-    
+    <LinearGradient
+    colors={["#4c669f", "#3b5998", "#192f6a"]}
+    start={{ x: 0, y: 0 }}
+    end={{ x: 1, y: 1 }}
+    style={styles.gradientContainer}
+    >
+
 <ScrollView style={styles.container}
 >
     
-    <Button title="Enviar Notificación" onPress={handleSendNotification} />
     <Text style={styles.title}>Cuentas de Suscripción</Text>
     <SubscriptionList
         subscriptions={subscriptions}
@@ -103,19 +108,21 @@ return (
     onCancel={() => setIsModalVisible(false)}
     />
 </ScrollView>
+</LinearGradient>
+
 );
 };
 
 const styles = StyleSheet.create({
 container: {
 flexGrow: 1,
-backgroundColor: "#fff",
 padding: 16,
 },
 title: {
 fontSize: 20,
 fontWeight: "bold",
 marginVertical: 16,
+color: "#fff",
 },
 item: {
 marginVertical: 10,
