@@ -1,18 +1,17 @@
 /* eslint-disable prettier/prettier */
 import React from "react";
 import { LinearGradient } from "expo-linear-gradient";
-import { StyleSheet } from "react-native";
+import { StyleSheet,View} from "react-native";
 
-const GradientBackground = () => {
+const GradientBackground = ({children}) => {
 return (
-<LinearGradient
-    colors={["rgba(0,0,255,1)", "rgba(0,255,255,1)"]} // De azul a cian
-    start={{ x: 0, y: 0 }} // Arriba izquierda
-    end={{ x: 1, y: 1 }} // Abajo derecha
-    style={styles.container}
->
-
-</LinearGradient>
+<View style={styles.container}>
+      <LinearGradient
+        colors={["#4c669f", "#3b5998", "#192f6a"]} // Colores de ejemplo
+        style={StyleSheet.absoluteFillObject} // Asegura que el gradiente ocupe toda la pantalla
+      />
+      {children} {/* Renderiza los componentes hijos encima del gradiente */}
+    </View>
 );
 };
 

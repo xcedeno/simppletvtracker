@@ -21,11 +21,24 @@ const SubscriptionList = ({
   const [animationValues, setAnimationValues] = useState({});
   const [visibleSubscriptions, setVisibleSubscriptions] = useState([]);
   const [limit, setLimit] = useState(20); // Controla el número de registros visibles
+  const [filterByRemainingDays, setFilterByRemainingDays] = useState(false);
 
+  
   useEffect(() => {
-    // Actualizar la lista visible cuando se cambia el límite
-    setVisibleSubscriptions(subscriptions.slice(0, limit));
-  }, [subscriptions, limit]);
+    const updateVisibleSubscriptions = () => {
+      if (filterByRemainingDays) {
+        const filteredSubscriptions = subscriptions.filter(
+          (sub) => sub.remaining_days <= 5
+        );
+        setVisibleSubscriptions(filteredSubscriptions.slice(0, limit));
+      } else {
+        setVisibleSubscriptions(subscriptions.slice(0, limit));
+      }
+    };
+  
+    updateVisibleSubscriptions();
+  }, [subscriptions, limit, filterByRemainingDays]);
+  
 
   useEffect(() => {
     const fetchRate = async () => {
@@ -150,18 +163,27 @@ const SubscriptionList = ({
     <View style={styles.container}>
       {/* Botones de selección */}
       <View style={styles.paginationContainer}>
-        <Button
-          title="Mostrar 10"
-          onPress={() => setLimit(10)}
-          color={limit === 10 ? "#6200EE" : "#ccc"}
-        />
-        
-        <Button
-          title="Mostrar todos"
-          onPress={() => setLimit(subscriptions.length)}
-          color={limit === subscriptions.length ? "#6200EE" : "#ccc"}
-        />
-      </View>
+  <View style={styles.paginationButtonWrapper}>
+    <Button
+      title="Menor de 5 días"
+      onPress={() => {
+        setFilterByRemainingDays(true);
+        setLimit(20); // Reinicia el límite si es necesario
+      }}
+      color={filterByRemainingDays ? "#6200EE" : "#ccc"}
+    />
+  </View>
+  <View style={styles.paginationButtonWrapper}>
+    <Button
+      title="Mostrar todos"
+      onPress={() => {
+        setFilterByRemainingDays(false);
+        setLimit(20); // Reinicia el límite si es necesario
+      }}
+      color={!filterByRemainingDays ? "#6200EE" : "#ccc"}
+    />
+  </View>
+</View>
       <FlatList
         data={visibleSubscriptions}
         keyExtractor={(item) => item.id.toString()}
@@ -180,12 +202,19 @@ const SubscriptionList = ({
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: "#f4f4f4",
+    backgroundColor: "RGBA(244,244,244,1)",
   },
   paginationContainer: {
     
-    justifyContent: "space-around",
-    marginVertical: 10,
+    flexDirection: "row", // Orientación vertical
+    justifyContent: "center", // Centrar los botones horizontalmente
+    alignItems: "center", // Centrar los botones verticalmente
+    marginVertical: 10, // Separación con otros elementos
+  },
+
+  paginationButtonWrapper: {
+    marginHorizontal: 10, // Separación entre botones
+    width: "40%", // Ancho del botón
   },
   listContainer: {
     paddingHorizontal: 15,

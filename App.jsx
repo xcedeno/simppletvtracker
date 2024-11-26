@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import * as Notifications from "expo-notifications";
 
 import React, { useEffect } from "react";
@@ -40,7 +41,21 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="MainScreen">
+      <Stack.Navigator 
+        initialRouteName="MainScreen"
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: "transparent", // Fondo transparente
+            elevation: 0, // Eliminar sombra (para Android)
+            shadowOpacity: 0, // Eliminar sombra (para iOS)
+          },
+          headerTintColor: "#fff", // Color del texto y los botones
+          headerTitleStyle: {
+            fontWeight: "bold", // Estilo del texto
+          },
+          headerTransparent: true, // Hacer que el AppBar sea completamente transparente
+        }}
+      >
         <Stack.Screen name="MainScreen" component={MainScreen} />
         <Stack.Screen
           name="SubscriptionDashboard"

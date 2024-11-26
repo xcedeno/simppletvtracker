@@ -12,6 +12,8 @@ import {
   Modal,
 } from "react-native";
 import { supabase } from "../db/SupabaseClient";
+import GradientBackground from "../components/GradientBackground";
+
 
 
 const RechargeScreen = () => {
@@ -100,6 +102,8 @@ const RechargeScreen = () => {
   };
 
   return (
+  
+    <GradientBackground>
     <View style={styles.container}>
       <Text style={styles.title}>Recargar Cuenta</Text>
 
@@ -166,6 +170,7 @@ const RechargeScreen = () => {
       {/* Botón para recargar saldo */}
       <Button title="Recargar Saldo" onPress={handleRecharge} />
     </View>
+    </GradientBackground>
   );
 };
 
@@ -175,12 +180,14 @@ const styles = StyleSheet.create({
     padding: 20,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f9f9f9",
+    zIndex: 1,
+    
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
+    color: "rgba(255,255,255,1)",
   },
   selector: {
     width: "100%",
